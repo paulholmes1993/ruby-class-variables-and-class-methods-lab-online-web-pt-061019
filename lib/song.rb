@@ -1,4 +1,3 @@
-class Song < Super
 
     attr_reader :artist, :genre
 
