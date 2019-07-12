@@ -4,22 +4,22 @@ class Song
   attr_accessor :name
   attr_accessor :artist
   attr_accessor :genre
-  
+
   def initialize(name, artist, genre)
     @name = name
     @artist = artist
     @genre = genre
 	@plays = 0
   end
-  
+
   def duration_in_minutes
     @duration / 60.0
   end
-  
+
   def duration_in_minutes=(new_duration)
     @duration = (new_duration * 60).to_i
   end
-  
+
   def play
     @plays += 1
 	@@plays += 1
@@ -34,7 +34,7 @@ end
 class MyLogger
   private_class_method :new
   @@logger = nil
-  
+
   def MyLogger.create
     @@logger = new unless @@logger
 	@@logger
@@ -43,39 +43,39 @@ end
 
 class SongList
   MAX_TIME = 5 * 60
-  
+
   def initialize
     @songs = Array.new
   end
-  
+
   def append(song)
     @songs.push(song)
 	self
   end
-  
+
   def delete_first
     @songs.shift
   end
-  
+
   def delete_last
     @songs.pop
   end
-  
+
   def [](index)
     @songs[index]
   end
-  
+
   def with_title_v1(title)
     for i in 0...@songs.length
       return @songs[i] if title == @songs[i].name
     end
     return nil
   end
-  
+
   def with_title_v2(title)
     @songs.find { |song| title == song.name }
   end
-  
+
   def SongList.is_too_long(song)
     song.duration > MAX_TIME
   end
@@ -91,11 +91,11 @@ class TestSongList < Test::Unit::TestCase
 	s4 = Song.new('title4', 'artist4', 4)
 
 	list.append(s1).append(s2).append(s3).append(s4)
-	
+
 	assert_equal(s1, list[0])
 	assert_equal(s3, list[2])
 	assert_nil(list[9])
-	
+
 	assert_equal(s1, list.delete_first)
 	assert_equal(s2, list.delete_first)
 	assert_equal(s4, list.delete_last)
