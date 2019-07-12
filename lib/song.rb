@@ -1,105 +1,75 @@
 class Song
-  @@plays = 0
+   attr_accessor :name, :artist, :genre
 
-  attr_accessor :name
-  attr_accessor :artist
-  attr_accessor :genre
+    @@all = []
 
-  def initialize(name, artist, genre)
-    @name = name
-    @artist = artist
-    @genre = genre
-	@plays = 0
-  end
+    def initialize(name, artist = nil, genre = nil)
+     @name = name
+     self.artist=artist if artist
+     # self.artist.songs.push(self)
+     self.genre=genre if genre
+     # @artist = artist
+   end
 
-  def duration_in_minutes
-    @duration / 60.0
-  end
+    def self.all
+     @@all
+   end
 
-  def duration_in_minutes=(new_duration)
-    @duration = (new_duration * 60).to_i
-  end
+    def self.destroy_all
+     @@all.clear
+   end
 
-  def play
-    @plays += 1
-	@@plays += 1
-	puts "The song: #@plays plays. Total #@@plays plays."
-  end
+    def save
+     @@all << self
+   end
 
-  def to_s
-    "Song: #@name--#@artist (#@duration)"
-  end
-end
+    def self.create(name)
+     song = self.new(name)
+     song.save
+     song
+   end
 
-class MyLogger
-  private_class_method :new
-  @@logger = nil
+    def artist=(artist)
+     @artist = artist
+     artist.add_song(self)
+     # Artist.all.push(artist)
+   end
 
-  def MyLogger.create
-    @@logger = new unless @@logger
-	@@logger
-  end
-end
+    def genre=(genre)
+     @genre = genre
+     if !(genre.songs.include?(self))
+       genre.songs << self
+       # Genre.all.push(genre)
+     # binding.pry
+     end
+   end
 
-class SongList
-  MAX_TIME = 5 * 60
+    def self.find_by_name(name)
+     all.detect {|song| song.name == name}
+   end
 
-  def initialize
-    @songs = Array.new
-  end
+    def self.find_or_create_by_name(name)
+     # if self.find_by_name(name)
+     #   self.find_by_name(name)
+     # else
+     # song = self.create(name)
+     # end
+     find_by_name(name) || create(name)
+   end
 
-  def append(song)
-    @songs.push(song)
-	self
-  end
+    def self.new_from_filename(filename)
+     info = filename.split(" - ")
+     artist, name, genre = info[0], info[1], info[2].gsub( ".mp3" , "")
 
-  def delete_first
-    @songs.shift
-  end
+      # song = self.find_or_create_by_name(name)
+     genre = Genre.find_or_create_by_name(genre)
+     artist = Artist.find_or_create_by_name(artist)
 
-  def delete_last
-    @songs.pop
-  end
+      new(name,artist,genre)
+   end
 
-  def [](index)
-    @songs[index]
-  end
+    def self.create_from_filename(filename)
+     new_from_filename(filename).tap{ |s| s.save}
 
-  def with_title_v1(title)
-    for i in 0...@songs.length
-      return @songs[i] if title == @songs[i].name
     end
-    return nil
-  end
-
-  def with_title_v2(title)
-    @songs.find { |song| title == song.name }
-  end
-
-  def SongList.is_too_long(song)
-    song.duration > MAX_TIME
-  end
-end
-
-require 'test/unit'
-class TestSongList < Test::Unit::TestCase
-  def test_delete
-    list = SongList.new
-	s1 = Song.new('title1', 'artist1', 1)
-	s2 = Song.new('title2', 'artist2', 2)
-	s3 = Song.new('title3', 'artist3', 3)
-	s4 = Song.new('title4', 'artist4', 4)
-
-	list.append(s1).append(s2).append(s3).append(s4)
-
-	assert_equal(s1, list[0])
-	assert_equal(s3, list[2])
-	assert_nil(list[9])
-
-	assert_equal(s1, list.delete_first)
-	assert_equal(s2, list.delete_first)
-	assert_equal(s4, list.delete_last)
-	assert_equal(s3, list.delete_last)
-	assert_nil(list.delete_last)
-  end
-end
+ end
